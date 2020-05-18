@@ -1,0 +1,3 @@
+# Auto Configure Class
+org.springframework.boot.autoconfigure.EnableAutoConfiguration=\
+com.raindrop.idempotent.config.IdempotentAutoConfigure
