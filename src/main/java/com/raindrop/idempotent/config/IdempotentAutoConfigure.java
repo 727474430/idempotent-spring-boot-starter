@@ -5,6 +5,7 @@ import com.raindrop.idempotent.base.IdempotentToken;
 import com.raindrop.idempotent.model.MemoryIdempotentToken;
 import com.raindrop.idempotent.model.RedisIdempotentToken;
 import com.raindrop.idempotent.properties.IdempotentProperties;
+import com.raindrop.idempotent.util.IdempotentTokenUtils;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
@@ -22,17 +23,29 @@ import org.springframework.data.redis.core.StringRedisTemplate;
 @Configuration
 @ConditionalOnClass()
 @EnableConfigurationProperties(IdempotentProperties.class)
-@ConditionalOnProperty(prefix = "idempotent", value = "enable", matchIfMissing = true)
+@ConditionalOnProperty(prefix = "idempotent", value = "enable", havingValue = "true")
 public class IdempotentAutoConfigure {
+
+    private final IdempotentProperties properties;
+
+    public IdempotentAutoConfigure(IdempotentProperties properties) {
+        this.properties = properties;
+    }
 
     @Bean
     @ConditionalOnMissingBean(IdempotentAop.class)
     public IdempotentAop idempotentAop() {
-        return new IdempotentAop();
+        return new IdempotentAop(properties.getTokenHeader());
     }
 
     @Bean
-    @ConditionalOnProperty(prefix = "idempotent", value = "tokenStorage", havingValue = "memory")
+    @ConditionalOnMissingBean(IdempotentTokenUtils.class)
+    public IdempotentTokenUtils tokenUtils() {
+        return new IdempotentTokenUtils();
+    }
+
+    @Bean
+    @ConditionalOnProperty(prefix = "idempotent", value = "tokenStorage", havingValue = "memory", matchIfMissing = true)
     @ConditionalOnMissingBean(IdempotentToken.class)
     public IdempotentToken memoryIdempotentToken() {
         return new MemoryIdempotentToken();
@@ -44,5 +57,6 @@ public class IdempotentAutoConfigure {
     public IdempotentToken redisIdempotentToken(StringRedisTemplate redisTemplate) {
         return new RedisIdempotentToken(redisTemplate);
     }
+
 
 }

@@ -2,11 +2,9 @@ package com.raindrop.idempotent.util;
 
 import com.raindrop.idempotent.base.IdempotentToken;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
 
 import java.util.UUID;
 
-@Component
 public class IdempotentTokenUtils {
 
     private static IdempotentToken idempotentToken;

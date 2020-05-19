@@ -7,7 +7,6 @@ import org.aspectj.lang.annotation.Aspect;
 import org.aspectj.lang.annotation.Pointcut;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.context.annotation.Configuration;
 import org.springframework.util.StringUtils;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
@@ -21,10 +20,19 @@ import javax.servlet.http.HttpServletRequest;
  * @create Time: 2020/5/17 10:00
  */
 @Aspect
-@Configuration
 public class IdempotentAop {
 
     private static Logger logger = LoggerFactory.getLogger(IdempotentAop.class);
+
+    private String tokenHeader;
+
+    public IdempotentAop(String tokenHeader) {
+        this.tokenHeader = tokenHeader;
+    }
+
+    public IdempotentAop() {
+
+    }
 
     @Pointcut("@annotation(com.raindrop.idempotent.anno.Idempotent)")
     public void pointcut() {
@@ -34,9 +42,9 @@ public class IdempotentAop {
     public Object around(ProceedingJoinPoint pjp) {
         ServletRequestAttributes requestAttributes = (ServletRequestAttributes) RequestContextHolder.getRequestAttributes();
         HttpServletRequest request = requestAttributes.getRequest();
-        String token = request.getHeader("token");
+        String token = request.getHeader(tokenHeader);
         if (StringUtils.isEmpty(token)) {
-            return " 请求失败，重复请求接口！";
+            return "请求失败，重复请求接口！";
         }
 
         boolean tokenExists = IdempotentTokenUtils.tokenCheck(token);

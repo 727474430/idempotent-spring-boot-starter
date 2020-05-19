@@ -21,21 +21,9 @@ public class IdempotentProperties {
      */
     private TokenStorageEnum tokenStorage = TokenStorageEnum.MEMORY;
     /**
-     * Redis host address
+     * Token header name. default token
      */
-    private String redisHost;
-    /**
-     * Redis host port
-     */
-    private Integer redisPort;
-    /**
-     * Redis database number
-     */
-    private Integer redisDatabase;
-    /**
-     * Redis auth password
-     */
-    private String redisPassword;
+    private String tokenHeader = "token";
 
     public Boolean getEnable() {
         return enable;
@@ -53,36 +41,11 @@ public class IdempotentProperties {
         this.tokenStorage = tokenStorage;
     }
 
-    public String getRedisHost() {
-        return redisHost;
+    public String getTokenHeader() {
+        return tokenHeader;
     }
 
-    public void setRedisHost(String redisHost) {
-        this.redisHost = redisHost;
+    public void setTokenHeader(String tokenHeader) {
+        this.tokenHeader = tokenHeader;
     }
-
-    public Integer getRedisPort() {
-        return redisPort;
-    }
-
-    public void setRedisPort(Integer redisPort) {
-        this.redisPort = redisPort;
-    }
-
-    public Integer getRedisDatabase() {
-        return redisDatabase;
-    }
-
-    public void setRedisDatabase(Integer redisDatabase) {
-        this.redisDatabase = redisDatabase;
-    }
-
-    public String getRedisPassword() {
-        return redisPassword;
-    }
-
-    public void setRedisPassword(String redisPassword) {
-        this.redisPassword = redisPassword;
-    }
-
 }
