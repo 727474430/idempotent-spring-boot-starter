@@ -68,15 +68,53 @@
       password:
       database: 0
   ```
+  
+* Api interface
 
+  ```java
+  @RestController
+  @RequestMapping("/order")
+  public class OrderController {
+    @Idempotent
+    @GetMapping("/create")
+    public String check() {
+        return "ok";
+    }
+  }
+  ```
+  
+* Get token before requesting interface
 
+  ```java
+  @RestController
+  public class OrderController {
+    @GetMapping("/token")
+    public String token() {
+        return IdempotentTokenUtils.tokenGenerate();
+    }
+  }
+  ```
+
+* The request interface carries token -> request success
+
+  ```bash
+  curl -H "token:idempotentToken" http://ip:port/order/create
+  ```
+  
+* The request interface does not have token -> request failure
+
+  ```bash
+  curl http://ip:port/order/create
+  ```
+  
 ### Screenshots
 
-![](src/main/resources/img/properties.png)
+![get-token](src/main/resources/img/get-token.png)
 
-![](src/main/resources/img/anno.png)
+![token-header](src/main/resources/img/token-header.png)
 
-![](src/main/resources/img/logging.png)
+![repeat-token](src/main/resources/img/repeat-token.png)
 
+![no-token](src/main/resources/img/no-token.png)
 
 [![](https://jitpack.io/v/727474430/idempotent-spring-boot-starter.svg)](https://jitpack.io/#727474430/idempotent-spring-boot-starter)

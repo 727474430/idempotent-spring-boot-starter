@@ -67,14 +67,52 @@
       database: 0
   ```
 
+* API 接口
+
+  ```java
+  @RestController
+  @RequestMapping("/order")
+  public class OrderController {
+    @Idempotent
+    @GetMapping("/create")
+    public String check() {
+        return "ok";
+    }
+  }
+  ```
+  
+* 获取 Token
+
+  ```java
+  @RestController
+  public class OrderController {
+    @GetMapping("/token")
+    public String token() {
+        return IdempotentTokenUtils.tokenGenerate();
+    }
+  }
+  ```
+
+* 请求接口携带 Token -> 成功请求
+
+  ```bash
+  curl -H "token:idempotentToken" http://ip:port/order/create
+  ```
+  
+* 请求接口不懈的 Token -> 请求失败
+
+  ```bash
+  curl http://ip:port/order/create
+  ```
 
 ### 截图
 
-![](src/main/resources/img/properties.png)
+![get-token](src/main/resources/img/get-token.png)
 
-![](src/main/resources/img/anno.png)
+![token-header](src/main/resources/img/token-header.png)
 
-![](src/main/resources/img/logging.png)
+![repeat-token](src/main/resources/img/repeat-token.png)
 
+![no-token](src/main/resources/img/no-token.png)
 
-[![](https://jitpack.io/v/727474430/web-logging-spring-boot-starter.svg)](https://jitpack.io/#727474430/web-logging-spring-boot-starter)
+[![](https://jitpack.io/v/727474430/idempotent-spring-boot-starter.svg)](https://jitpack.io/#727474430/idempotent-spring-boot-starter)
