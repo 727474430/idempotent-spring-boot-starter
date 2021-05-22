@@ -1,5 +1,7 @@
 package com.raindrop.idempotent.base;
 
+import java.util.concurrent.TimeUnit;
+
 /**
  * @name: com.raindrop.idempotent.base.IdempotentToken.java
  * @description: Idempotent token interface
@@ -12,15 +14,17 @@ public interface IdempotentToken {
      * Add the token to storage
      *
      * @param token
+     * @param timeout
+     * @param timeUnit
      */
-    void add(String token);
+    boolean add(String token, long timeout, TimeUnit timeUnit);
 
     /**
-     * Check the token exists form storage
+     * Remove the token exists form storage
      *
      * @param token
      * @return
      */
-    boolean check(String token);
+    boolean remove(String token);
 
 }

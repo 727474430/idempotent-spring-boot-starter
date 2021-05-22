@@ -40,11 +40,16 @@ public class RedisIdempotentToken implements IdempotentToken {
      * @param token
      */
     @Override
-    public void add(String token) {
+    public boolean add(String token, long timeout, TimeUnit timeUnit) {
         try {
-            redisTemplate.opsForValue().set(token, DEFAULT_VALUE, DEFAULT_EXPIRE, TimeUnit.SECONDS);
+            Boolean success = redisTemplate.opsForValue().setIfAbsent(token, DEFAULT_VALUE);
+            if (success) {
+                redisTemplate.expire(token, timeout, timeUnit);
+            }
+            return success;
         } catch (Exception e) {
             logger.error("Redis Idempotent add token error: \n{}", e.getMessage());
+            return false;
         }
     }
 
@@ -55,11 +60,11 @@ public class RedisIdempotentToken implements IdempotentToken {
      * @return
      */
     @Override
-    public boolean check(String token) {
+    public boolean remove(String token) {
         try {
             return (boolean) redisTemplate.execute(RedisScriptUtils.removeTokenScript(), Collections.singletonList(token));
         } catch (Exception e) {
-            logger.error("Redis Idempotent check token error: \n{}", e.getMessage());
+            logger.error("Redis Idempotent remove token error: \n{}", e.getMessage());
             return false;
         }
     }

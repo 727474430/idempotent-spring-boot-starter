@@ -1,9 +1,12 @@
 package com.raindrop.idempotent.model;
 
 import com.raindrop.idempotent.base.IdempotentToken;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.HashSet;
 import java.util.Set;
+import java.util.concurrent.TimeUnit;
 
 /**
  * @name: com.raindrop.idempotent.model.MemoryIdempotentToken.java
@@ -13,6 +16,8 @@ import java.util.Set;
  */
 public class MemoryIdempotentToken implements IdempotentToken {
 
+    private static final Logger logger = LoggerFactory.getLogger(MemoryIdempotentToken.class);
+
     private static Set<String> tokens = new HashSet<>();
 
     /**
@@ -21,8 +26,14 @@ public class MemoryIdempotentToken implements IdempotentToken {
      * @param token
      */
     @Override
-    public void add(String token) {
-        tokens.add(token);
+    public boolean add(String token, long timeout, TimeUnit timeUnit) {
+        try {
+            tokens.add(token);
+            return true;
+        } catch (Exception e) {
+            logger.error("Memory idempotent token [ " + token + " ] set error.");
+            return false;
+        }
     }
 
     /**
@@ -32,7 +43,7 @@ public class MemoryIdempotentToken implements IdempotentToken {
      * @return
      */
     @Override
-    public boolean check(String token) {
+    public boolean remove(String token) {
         boolean contains = tokens.contains(token);
         if (contains) {
             tokens.remove(token);

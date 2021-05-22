@@ -1,9 +1,8 @@
 ### A custom spring boot starter project.
 
-  Mainly provides interface idempotent check function, A simple annotation '@Idempotent' can complete the verification.
+Mainly provides interface idempotent check function, A simple annotation '@Idempotent' can complete the verification.
 
-  [中文注释](./README_CN.md) 
-
+[中文注释](./README_CN.md)
 
 ### How to use
 
@@ -18,27 +17,25 @@
    ```xml
    <dependency>
        <groupId>com.raindrop</groupId>
-       <artifactId>idempotent-logging-spring-boot-starter</artifactId>
+       <artifactId>idempotent-spring-boot-starter</artifactId>
        <version>1.0.RELEASE</version>
    </dependency>
    ```
 
 5. **Add following attributes in application.properties/application.yml**
 
-   * idempotent.enable=true
+    * idempotent.enable=true
 
-     Whether to open the interface idempotent check function. default is **"false"** not open. select true is open.
+      Whether to open the interface idempotent check function. default is **"false"** not open. select true is open.
 
-   * idempotent.tokenStorage=redis
+    * idempotent.tokenStorage=redis
 
-     Need to using storage type for token. default is **"memory"**. support redis and memory storage type. If you use 
-     redis, you need to add redis related configuration.
+      Need to using storage type for token. default is **"memory"**. support redis and memory storage type. If you use
+      redis, you need to add redis related configuration.
 
-   * idempotent.tokenHeader=token
+    * idempotent.tokenHeader=token
 
-     Pass the key of the Token request header. default key is **"token"**.
-
-
+      Pass the key of the Token request header. default key is **"token"**.
 
 ### Example
 
@@ -68,45 +65,41 @@
       password:
       database: 0
   ```
-  
+
+* @Idempotent
+    - timeout: Idempotent check timeout. default 1 seconds
+    - timeUnit: Timeout time unit. default seconds
+    - tips: 请求失败，重复请求接口，请稍后再试！
+    - delKey: End of execution, delete key, default not delete
+
 * Api interface
 
   ```java
   @RestController
   @RequestMapping("/order")
   public class OrderController {
+  
     @Idempotent
     @GetMapping("/create")
-    public String check() {
+    public String create() {
         return "ok";
     }
-  }
-  ```
   
-* Get token before requesting interface
-
-  ```java
-  @RestController
-  public class OrderController {
-    @GetMapping("/token")
-    public String token() {
-        return IdempotentTokenUtils.tokenGenerate();
+    @Idempotent(timeout = 3L, timeUnit = TimeUnit.SECONDS, delKey = false)
+    @GetMapping("/update")
+    public String update() {
+        return "ok";
     }
+  
   }
   ```
 
-* The request interface carries token -> request success
-
-  ```bash
-  curl -H "token:idempotentToken" http://ip:port/order/create
-  ```
-  
-* The request interface does not have token -> request failure
+* The request interface
 
   ```bash
   curl http://ip:port/order/create
   ```
-  
+
 ### Screenshots
 
 ![get-token](src/main/resources/img/get-token.png)

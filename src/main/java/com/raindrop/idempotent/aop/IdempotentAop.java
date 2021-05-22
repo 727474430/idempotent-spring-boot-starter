@@ -1,17 +1,13 @@
 package com.raindrop.idempotent.aop;
 
+import cn.hutool.core.util.StrUtil;
+import com.raindrop.idempotent.anno.Idempotent;
 import com.raindrop.idempotent.util.IdempotentTokenUtils;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
-import org.aspectj.lang.annotation.Pointcut;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.util.StringUtils;
-import org.springframework.web.context.request.RequestContextHolder;
-import org.springframework.web.context.request.ServletRequestAttributes;
-
-import javax.servlet.http.HttpServletRequest;
 
 /**
  * @name: com.raindrop.idempotent.aop.IdempotentAop.java
@@ -22,44 +18,33 @@ import javax.servlet.http.HttpServletRequest;
 @Aspect
 public class IdempotentAop {
 
-    private static Logger logger = LoggerFactory.getLogger(IdempotentAop.class);
+    private static final Logger logger = LoggerFactory.getLogger(IdempotentAop.class);
 
-    private String tokenHeader;
+    @Around("@annotation(idempotent)")
+    public Object around(ProceedingJoinPoint pjp, Idempotent idempotent) {
+        Object target = pjp.getTarget();
+        String methodName = pjp.getSignature().toString();
+        String argsList = StrUtil.join(",", pjp.getArgs());
+        String token = IdempotentTokenUtils.tokenGenerate(methodName + argsList);
 
-    public IdempotentAop(String tokenHeader) {
-        this.tokenHeader = tokenHeader;
-    }
-
-    public IdempotentAop() {
-
-    }
-
-    @Pointcut("@annotation(com.raindrop.idempotent.anno.Idempotent)")
-    public void pointcut() {
-    }
-
-    @Around("pointcut()")
-    public Object around(ProceedingJoinPoint pjp) {
-        ServletRequestAttributes requestAttributes = (ServletRequestAttributes) RequestContextHolder.getRequestAttributes();
-        HttpServletRequest request = requestAttributes.getRequest();
-        String token = request.getHeader(tokenHeader);
-        if (StringUtils.isEmpty(token)) {
-            return "请求失败，重复请求接口！";
-        }
-
-        boolean tokenExists = IdempotentTokenUtils.tokenCheck(token);
-        if (!tokenExists) {
-            return "请求失败，错误的令牌！";
+        boolean success = IdempotentTokenUtils.setIfAbsent(token, idempotent.timeout(), idempotent.timeUnit());
+        if (!success) {
+            logger.info("方法 {}.{} 参数 {} 存在重复的请求，无法通过幂等校验！",
+                    target.getClass().getSimpleName(), methodName, argsList);
+            throw new IllegalArgumentException(idempotent.tips());
         }
 
         Object result = null;
         try {
             result = pjp.proceed();
-        } catch (Throwable throwable) {
-            logger.error("Idempotent aop around process error: \n{}", throwable.getMessage());
+        } catch (Throwable e) {
+            logger.error("Idempotent aop around process error, method name: {}", methodName, e.getMessage());
+        } finally {
+            if (idempotent.delKey()) {
+                IdempotentTokenUtils.remove(token);
+            }
         }
         return result;
     }
-
 
 }

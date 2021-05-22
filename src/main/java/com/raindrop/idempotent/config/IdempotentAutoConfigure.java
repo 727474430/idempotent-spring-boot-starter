@@ -26,16 +26,10 @@ import org.springframework.data.redis.core.StringRedisTemplate;
 @ConditionalOnProperty(prefix = "idempotent", value = "enable", havingValue = "true")
 public class IdempotentAutoConfigure {
 
-    private final IdempotentProperties properties;
-
-    public IdempotentAutoConfigure(IdempotentProperties properties) {
-        this.properties = properties;
-    }
-
     @Bean
     @ConditionalOnMissingBean(IdempotentAop.class)
     public IdempotentAop idempotentAop() {
-        return new IdempotentAop(properties.getTokenHeader());
+        return new IdempotentAop();
     }
 
     @Bean
@@ -55,6 +49,5 @@ public class IdempotentAutoConfigure {
     public IdempotentToken redisIdempotentToken(StringRedisTemplate redisTemplate) {
         return new RedisIdempotentToken(redisTemplate);
     }
-
 
 }
