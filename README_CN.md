@@ -1,6 +1,6 @@
 ### 一个自定义 spring boot starter 项目
 
-​ 主要提供接口幂等性校验功能，只需要通过一个注解 '@Idempotent' 即可完成校验。
+主要提供接口幂等性校验功能，只需要通过一个注解 '@Idempotent' 即可完成校验。
 
 ### 如何使用.
 
@@ -64,10 +64,10 @@
   ```
 
 * @Idempotent
-    - timeout: Idempotent check timeout. default 1 seconds
-    - timeUnit: Timeout time unit. default seconds
+    - timeout: 幂等校验超时时间，默认 1 秒
+    - timeUnit: 超时时间单位，默认秒
     - tips: 请求失败，重复请求接口，请稍后再试！
-    - delKey: End of execution, delete key, default not delete
+    - delKey: 执行完成，是否删除 Key，默认不删除
 
 * API 接口
 
@@ -95,15 +95,5 @@
   ```bash
   curl http://ip:port/order/create
   ```
-
-### 截图
-
-![get-token](src/main/resources/img/get-token.png)
-
-![token-header](src/main/resources/img/token-header.png)
-
-![repeat-token](src/main/resources/img/repeat-token.png)
-
-![no-token](src/main/resources/img/no-token.png)
 
 [![](https://jitpack.io/v/727474430/idempotent-spring-boot-starter.svg)](https://jitpack.io/#727474430/idempotent-spring-boot-starter)

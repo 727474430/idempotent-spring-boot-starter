@@ -100,14 +100,4 @@ Mainly provides interface idempotent check function, A simple annotation '@Idemp
   curl http://ip:port/order/create
   ```
 
-### Screenshots
-
-![get-token](src/main/resources/img/get-token.png)
-
-![token-header](src/main/resources/img/token-header.png)
-
-![repeat-token](src/main/resources/img/repeat-token.png)
-
-![no-token](src/main/resources/img/no-token.png)
-
 [![](https://jitpack.io/v/727474430/idempotent-spring-boot-starter.svg)](https://jitpack.io/#727474430/idempotent-spring-boot-starter)
