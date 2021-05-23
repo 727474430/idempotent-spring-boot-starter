@@ -6,6 +6,12 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 import java.util.concurrent.TimeUnit;
 
+/**
+ * @name: com.raindrop.idempotent.util.IdempotentTokenUtil.java
+ * @description: Idempotent token utils class
+ * @author: Raindrop
+ * @create Time: 2021/5/23 22:00
+ */
 public class IdempotentTokenUtils {
 
     private static IdempotentToken idempotentToken;

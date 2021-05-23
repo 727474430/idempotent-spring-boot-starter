@@ -14,7 +14,7 @@ import org.springframework.scripting.support.ResourceScriptSource;
 public class RedisScriptUtils {
 
     /**
-     * Get and remove key script
+     * Redis remove key script. this is an atomic method
      *
      * @return
      */
