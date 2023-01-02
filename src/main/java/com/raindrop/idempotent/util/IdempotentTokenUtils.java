@@ -27,23 +27,39 @@ public class IdempotentTokenUtils {
     }
 
     /**
-     * Set the token if not exists
+     * Set the key if not exists
      *
-     * @param token
+     * @param key        cache key
+     * @param expireTime cache expireTime
+     * @param expireUnit expireTime Unit
      * @return
      */
-    public static boolean setIfAbsent(String token, long timeout, TimeUnit timeUnit) {
-        return idempotentToken.add(token, timeout, timeUnit);
+    public static boolean setIfAbsent(String key, long expireTime, TimeUnit expireUnit) {
+        return setIfAbsent(key, null, expireTime, expireUnit);
     }
 
     /**
-     * Check the token exists
+     * Set the key if not exists
      *
-     * @param token
+     * @param key        cache key
+     * @param value      cache value
+     * @param expireTime cache expireTime
+     * @param expireUnit expireTime Unit
      * @return
      */
-    public static boolean remove(String token) {
-        return idempotentToken.remove(token);
+    public static boolean setIfAbsent(String key, String value, long expireTime, TimeUnit expireUnit) {
+        return idempotentToken.add(key, value, expireTime, expireUnit);
+    }
+
+    /**
+     * Check the key exists
+     *
+     * @param key   cache key
+     * @param value cache value
+     * @return
+     */
+    public static boolean remove(String key, String value) {
+        return idempotentToken.remove(key, value);
     }
 
     @Autowired

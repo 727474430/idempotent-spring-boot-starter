@@ -37,14 +37,17 @@ public class RedisIdempotentToken implements IdempotentToken {
     /**
      * Add the token to redis
      *
-     * @param token
+     * @param key        cache key
+     * @param value      cache value
+     * @param expireTime cache expireTime
+     * @param expireUnit expireTime Unit
      */
     @Override
-    public boolean add(String token, long timeout, TimeUnit timeUnit) {
+    public boolean add(String key, String value, long expireTime, TimeUnit expireUnit) {
         try {
-            Boolean success = redisTemplate.opsForValue().setIfAbsent(token, DEFAULT_VALUE);
+            Boolean success = redisTemplate.opsForValue().setIfAbsent(key, null == value ? DEFAULT_VALUE : value);
             if (success) {
-                redisTemplate.expire(token, timeout, timeUnit);
+                redisTemplate.expire(key, expireTime, expireUnit);
             }
             return success;
         } catch (Exception e) {
@@ -56,13 +59,15 @@ public class RedisIdempotentToken implements IdempotentToken {
     /**
      * Check the token exists in redis
      *
-     * @param token
+     * @param key   cache key
+     * @param value cache value
      * @return
      */
     @Override
-    public boolean remove(String token) {
+    public boolean remove(String key, String value) {
         try {
-            return (boolean) redisTemplate.execute(RedisScriptUtils.removeTokenScript(), Collections.singletonList(token));
+            Long result = redisTemplate.execute(RedisScriptUtils.removeTokenScript(), Collections.singletonList(key), value);
+            return result == 1;
         } catch (Exception e) {
             logger.error("Redis Idempotent remove token error: \n{}", e.getMessage());
             return false;

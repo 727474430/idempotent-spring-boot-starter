@@ -15,11 +15,11 @@ import java.util.concurrent.TimeUnit;
 public @interface Idempotent {
 
     /**
-     * Idempotent check timeout. default 1 seconds
+     * Idempotent check timeout. default 10 seconds
      *
      * @return
      */
-    long timeout() default 1L;
+    long timeout() default 10L;
 
     /**
      * Timeout time unit. default seconds

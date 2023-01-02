@@ -1,11 +1,12 @@
 package com.raindrop.idempotent.model;
 
+import com.github.benmanes.caffeine.cache.Cache;
+import com.github.benmanes.caffeine.cache.Caffeine;
 import com.raindrop.idempotent.base.IdempotentToken;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.HashSet;
-import java.util.Set;
+import java.util.Objects;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -17,21 +18,38 @@ import java.util.concurrent.TimeUnit;
 public class MemoryIdempotentToken implements IdempotentToken {
 
     private static final Logger logger = LoggerFactory.getLogger(MemoryIdempotentToken.class);
-
-    private static Set<String> tokens = new HashSet<>();
+    /**
+     * Memory token key default value
+     */
+    private static final String DEFAULT_VALUE = "0";
+    /**
+     * Memory cache manager
+     */
+    private static Cache<Object, Object> cache = Caffeine.newBuilder()
+            .initialCapacity(10)
+            .maximumSize(100)
+            .expireAfterWrite(10L, TimeUnit.SECONDS)
+            .build();
 
     /**
      * Add the token to memory
      *
-     * @param token
+     * @param key        cache key
+     * @param value      cache value
+     * @param expireTime cache expireTime
+     * @param expireUnit expireTime Unit
      */
     @Override
-    public boolean add(String token, long timeout, TimeUnit timeUnit) {
+    public boolean add(String key, String value, long expireTime, TimeUnit expireUnit) {
         try {
-            tokens.add(token);
-            return true;
+            Object o = cache.getIfPresent(key);
+            if (Objects.isNull(o)) {
+                cache.put(key, null == value ? DEFAULT_VALUE : value);
+                return true;
+            }
+            return false;
         } catch (Exception e) {
-            logger.error("Memory idempotent token [ " + token + " ] set error.");
+            logger.error("Memory idempotent token [ " + key + " ] set error.");
             return false;
         }
     }
@@ -39,16 +57,18 @@ public class MemoryIdempotentToken implements IdempotentToken {
     /**
      * Check the token exists in memory
      *
-     * @param token
+     * @param key   cache key
+     * @param value cache value
      * @return
      */
     @Override
-    public boolean remove(String token) {
-        boolean contains = tokens.contains(token);
-        if (contains) {
-            tokens.remove(token);
+    public boolean remove(String key, String value) {
+        Object v = cache.getIfPresent(key);
+        if (value.equals(v)) {
+            cache.invalidate(key);
+            return true;
         }
-        return contains;
+        return false;
     }
 
 }

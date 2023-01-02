@@ -11,20 +11,22 @@ import java.util.concurrent.TimeUnit;
 public interface IdempotentToken {
 
     /**
-     * Add the token to storage
+     * Add the key to storage
      *
-     * @param token
-     * @param timeout
-     * @param timeUnit
+     * @param key        cache key
+     * @param value      cache value
+     * @param expireTime cache expireTime
+     * @param expireUnit expireTime Unit
      */
-    boolean add(String token, long timeout, TimeUnit timeUnit);
+    boolean add(String key, String value, long expireTime, TimeUnit expireUnit);
 
     /**
-     * Remove the token exists form storage
+     * Remove the key exists form storage
      *
-     * @param token
+     * @param key   cache key
+     * @param value cache value
      * @return
      */
-    boolean remove(String token);
+    boolean remove(String key, String value);
 
 }

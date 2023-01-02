@@ -2,12 +2,15 @@ package com.raindrop.idempotent.aop;
 
 import cn.hutool.core.util.StrUtil;
 import com.raindrop.idempotent.anno.Idempotent;
+import com.raindrop.idempotent.exception.IdempotentException;
 import com.raindrop.idempotent.util.IdempotentTokenUtils;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.util.UUID;
 
 /**
  * @name: com.raindrop.idempotent.aop.IdempotentAop.java
@@ -22,29 +25,34 @@ public class IdempotentAop {
 
     @Around("@annotation(idempotent)")
     public Object around(ProceedingJoinPoint pjp, Idempotent idempotent) {
-        Object target = pjp.getTarget();
-        String methodName = pjp.getSignature().toString();
-        String argsList = StrUtil.join(",", pjp.getArgs());
-        String token = IdempotentTokenUtils.tokenGenerate(methodName + argsList);
+        String key = getTokenKey(pjp);
+        String token = IdempotentTokenUtils.tokenGenerate(key);
+        String value = UUID.randomUUID().toString().replaceAll("-", "");
 
-        boolean success = IdempotentTokenUtils.setIfAbsent(token, idempotent.timeout(), idempotent.timeUnit());
+        boolean success = IdempotentTokenUtils.setIfAbsent(token, value, idempotent.timeout(), idempotent.timeUnit());
         if (!success) {
-            logger.info("方法 {}.{} 参数 {} 存在重复的请求，无法通过幂等校验！",
-                    target.getClass().getSimpleName(), methodName, argsList);
-            throw new IllegalArgumentException(idempotent.tips());
+            logger.info("Request repeat, Idempotent check failure, key: {} ", key);
+            throw new IdempotentException(idempotent.tips());
         }
 
         Object result = null;
         try {
             result = pjp.proceed();
         } catch (Throwable e) {
-            logger.error("Idempotent aop around process error, method name: {}", methodName, e.getMessage());
+            logger.error("Idempotent aop around process error, key name: {}", key, e);
         } finally {
             if (idempotent.delKey()) {
-                IdempotentTokenUtils.remove(token);
+                IdempotentTokenUtils.remove(token, value);
             }
         }
         return result;
+    }
+
+    private String getTokenKey(ProceedingJoinPoint pjp) {
+        Object target = pjp.getTarget();
+        String methodName = pjp.getSignature().toString();
+        String argsList = StrUtil.join(",", pjp.getArgs());
+        return methodName + ":" + argsList;
     }
 
 }
