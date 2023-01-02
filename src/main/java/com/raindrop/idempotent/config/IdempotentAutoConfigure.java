@@ -39,13 +39,13 @@ public class IdempotentAutoConfigure {
     }
 
     @Bean
-    @ConditionalOnProperty(prefix = "idempotent", value = "tokenStorage", havingValue = "memory", matchIfMissing = true)
+    @ConditionalOnProperty(prefix = "idempotent", value = "token-storage", havingValue = "memory", matchIfMissing = true)
     public IdempotentToken memoryIdempotentToken() {
         return new MemoryIdempotentToken();
     }
 
     @Bean
-    @ConditionalOnProperty(prefix = "idempotent", value = "tokenStorage", havingValue = "redis")
+    @ConditionalOnProperty(prefix = "idempotent", value = "token-storage", havingValue = "redis", matchIfMissing = true)
     public IdempotentToken redisIdempotentToken(StringRedisTemplate redisTemplate) {
         return new RedisIdempotentToken(redisTemplate);
     }
