@@ -18,10 +18,10 @@ public class RedisScriptUtils {
      *
      * @return
      */
-    public static RedisScript removeTokenScript() {
-        DefaultRedisScript redisScript = new DefaultRedisScript();
+    public static RedisScript<Long> removeTokenScript() {
+        DefaultRedisScript<Long> redisScript = new DefaultRedisScript<>();
+        redisScript.setResultType(Long.class);
         redisScript.setScriptSource(new ResourceScriptSource(new ClassPathResource("META-INF/scripts/remove_key.lua")));
-        redisScript.setResultType(Boolean.class);
         return redisScript;
     }
 

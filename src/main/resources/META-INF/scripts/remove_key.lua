@@ -4,17 +4,10 @@
 ---
 
 local token_key = KEYS[1]
-
-local token_value = redis.call("get", token_key)
-
-if token_value == nil then
-    return false
+local token_value = ARGV[1]
+if redis.call('get', token_key) == token_value then
+    redis.log(redis.LOG_DEBUG, 'remove key: ' .. token_key .. ' success')
+    return redis.call("del", token_key)
+else
+    return 0
 end
-
-local result = redis.call("del", token_key)
-if result == 0 then
-    return false
-end
-
-redis.log(redis.LOG_DEBUG, 'remove key: ' .. token_key .. ' success')
-return true
